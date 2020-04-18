@@ -113,7 +113,7 @@ public class AntArea {
             //We are not checking invalid operation here because there may be the case that an ant spawned in this cell
             //and couldn't move because an ant was already here. And we are calling leave before moving.
             if (type == CellType.DEFAULT) {
-                repaint(new Color((int) foodPheremone * 5, (int) homePheremone * 5, 0));
+                repaint(new Color((int) (foodPheremone * (255 / maxFoodPheremone)), (int) (homePheremone * (255 / maxFoodPheremone)), 0));
             } else {
                 repaint(cellTypeColorMap.get(type));
             }
@@ -213,7 +213,7 @@ public class AntArea {
     }
 
     public void update() {
-        if (currAnts <= maxAnts) {
+        if (currAnts < maxAnts) {
             int randIndex = random.nextInt(nestLocations.size());
             int x = nestLocations.get(randIndex).getKey();
             int y = nestLocations.get(randIndex).getValue();

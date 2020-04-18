@@ -8,7 +8,7 @@ package ant_art;
 public class Main {
     public static void main(String[] args) {
         AntArea antArea = new AntArea(512, 512);
-        GUI gui = new GUI(antArea, "Ant Simulator", 600, 600, 30);
-        gui.execute();
+        Renderer renderer = new Renderer(antArea, "Ant Simulator", 600, 600, 30, 120, 10);
+        renderer.execute();
     }
 }
