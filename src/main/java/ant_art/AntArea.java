@@ -113,7 +113,7 @@ public class AntArea {
             //We are not checking invalid operation here because there may be the case that an ant spawned in this cell
             //and couldn't move because an ant was already here. And we are calling leave before moving.
             if (type == CellType.DEFAULT) {
-                repaint(new Color((int) (foodPheremone * (255 / maxFoodPheremone)), (int) (homePheremone * (255 / maxFoodPheremone)), 0));
+                repaint(getRandomColor());
             } else {
                 repaint(cellTypeColorMap.get(type));
             }
@@ -126,14 +126,14 @@ public class AntArea {
     private final int width;
     private final int height;
     private final List<Ant> ants;
-    private int maxAnts = 50;
+    private int maxAnts = 25;
     private int currAnts = 0;
     private Color antColor = Color.blue;
     private int nestSize = 4;
     private int countNests = 3;
     private List<Pair<Integer, Integer>> nestLocations = new ArrayList<>();
     private int foodSize = 4;
-    private int countFood = 20;
+    private int countFood = 5;
     private List<Pair<Integer, Integer>> foodLocations = new ArrayList<>();
     private int cellSize = 4;
     @SuppressWarnings("unchecked")
@@ -142,6 +142,8 @@ public class AntArea {
             AntDirections.EAST, AntDirections.WEST};
     private final Random random = new Random();
     private static Map<CellType, Color> cellTypeColorMap = new HashMap<>();
+    private MarkovChain mkvChain;
+    private Color color;
 
     static {
         cellTypeColorMap.put(CellType.DEFAULT, Color.black);
@@ -149,7 +151,7 @@ public class AntArea {
         cellTypeColorMap.put(CellType.FOOD, Color.red);
     }
 
-    public AntArea(int width, int height) {
+    public AntArea(int width, int height, MarkovChain mkvChain) {
         this.mapImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.width = width;
         this.height = height;
@@ -181,6 +183,7 @@ public class AntArea {
                 }
             }
         }
+        this.mkvChain = mkvChain;
     }
 
     public BufferedImage getMapImage() {
@@ -205,6 +208,15 @@ public class AntArea {
 
     public Cell[][] getMap() {
         return map;
+    }
+
+    public Color getRandomColor() {
+        if (color == null) {
+            color = mkvChain.getRandomColor();
+            return color;
+        }
+        color = mkvChain.getRandomNeighboringColor(color);
+        return color;
     }
 
     public void spawnAnt(Pair<Integer, Integer> directionVector, Pair<Integer, Integer> location) {
