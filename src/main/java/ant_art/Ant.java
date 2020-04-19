@@ -22,7 +22,7 @@ public class Ant {
     private int currFood;
     private int foodCapacity;
     private Random random = new Random();
-    private int selectionSeed = 3;
+    private int selectionSeed = 5;
 
     public Ant(AntArea antArea, Pair<Integer, Integer> directionVector, Pair<Integer, Integer> location, Color color,
                int foodCapacity) {
@@ -36,6 +36,10 @@ public class Ant {
 
     public Color getColor() {
         return color;
+    }
+
+    public Pair<Integer, Integer> getLocation() {
+        return location;
     }
 
     public boolean collectedFood() {

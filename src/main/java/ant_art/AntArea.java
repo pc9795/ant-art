@@ -23,15 +23,14 @@ public class AntArea {
         private float maxFoodPheremone = 50;
         private float homePheremone;
         private float foodPheremone;
-        private final AntArea parent;
         private final Pair<Integer, Integer> location;
         private boolean antPresent;
         private int size;
         private int food;
         private Color color;
+        private boolean decay = true;
 
-        public Cell(AntArea parent, Pair<Integer, Integer> location, int size, boolean typeIdentification) {
-            this.parent = parent;
+        public Cell(Pair<Integer, Integer> location, int size, boolean typeIdentification) {
             this.type = CellType.DEFAULT;
             this.location = location;
             this.size = size;
@@ -55,8 +54,8 @@ public class AntArea {
             int count = 0;
             for (int i = imageX; i < imageX + size; i++) {
                 for (int j = imageY; j < imageY + size; j++) {
-                    Color pixelColor = new Color(parent.mapImage.getRGB(i, j));
-                    count += pixelColor.equals(color) ? 1 : 0;
+                    Color pixelColor = new Color(mapImage.getRGB(i, j));
+                    count += ImageUtils.isSimilar(color, pixelColor) ? 1 : 0;
                 }
             }
             return (float) count / (size * size) > 0.5;
@@ -96,6 +95,7 @@ public class AntArea {
             if (food == 0) {
                 type = CellType.DEFAULT;
                 repaint(cellTypeColorMap.get(type));
+                decay = false;
             }
         }
 
@@ -125,7 +125,7 @@ public class AntArea {
 
             for (int i = imageX; i < imageX + size; i++) {
                 for (int j = imageY; j < imageY + size; j++) {
-                    parent.getMapImage().setRGB(i, j, color.getRGB());
+                    mapImage.setRGB(i, j, color.getRGB());
                 }
             }
         }
@@ -138,8 +138,7 @@ public class AntArea {
             if (type != CellType.DEFAULT || color == null) {
                 return;
             }
-            float intensity = (foodPheremone + homePheremone) / (maxFoodPheremone + maxHomePheremone) * 20;
-            intensity = 1;
+            float intensity = (foodPheremone / maxFoodPheremone) * 25;
             intensity = Math.min(intensity, 1f);
             int red = (int) (color.getRed() * intensity);
             int green = (int) (color.getGreen() * intensity);
@@ -150,11 +149,15 @@ public class AntArea {
         public void leave(Ant ant) {
             //We are not checking invalid operation here because there may be the case that an ant spawned in this cell
             //and couldn't move because an ant was already here. And we are calling leave before moving.
-            if (type == CellType.DEFAULT) {
-                color = getRandomColor();
-                repaintAccordingToPheremoneIntensity();
-            } else {
-                repaint(cellTypeColorMap.get(type));
+            switch (type) {
+                case DEFAULT:
+                    color = getRandomColor();
+                    repaintAccordingToPheremoneIntensity();
+                    break;
+                case NEST:
+                case FOOD:
+                    repaint(cellTypeColorMap.get(type));
+                    break;
             }
             antPresent = false;
         }
@@ -166,13 +169,13 @@ public class AntArea {
     private final int height;
     private final List<Ant> ants;
     private int currAnts = 0;
-    private int nestSize = 4;
+    private int nestSize = 1;
     private int foodSize = 1;
     private List<Pair<Integer, Integer>> nestLocations = new ArrayList<>();
-    private int maxAnts = 5;
+    private int maxAnts = 100;
     private int countFood = 20;
     private int countNests = 3;
-    private int defaultFoood = 1;
+    private int defaultFoood = 5;
     private float decayRate = 0.01f;
     private float pheremoneThreshold = 0.01f;
     private float pheremoneGain = 1;
@@ -195,16 +198,23 @@ public class AntArea {
         cellTypeColorMap.put(CellType.FOOD, Color.red);
     }
 
-    public AntArea(int width, int height, MarkovChain mkvChain, BufferedImage frame) {
+    public AntArea(MarkovChain mkvChain, BufferedImage frame, Color target, Color background) {
+        cellTypeColorMap.put(CellType.FOOD, target);
+        cellTypeColorMap.put(CellType.DEFAULT, background);
+        this.width = (frame.getWidth() / cellSize) * cellSize;
+        this.height = (frame.getHeight() / cellSize) * cellSize;
         this.mapImage = frame;
-        this.width = width;
-        this.height = height;
-        this.map = new Cell[width][height];
+        this.map = new Cell[width / cellSize][height / cellSize];
+        int foodCellsCount = 0;
         for (int i = 0; i < this.width / cellSize; i++) {
             for (int j = 0; j < this.height / cellSize; j++) {
-                this.map[i][j] = new Cell(this, new Pair<>(i, j), cellSize, true);
+                this.map[i][j] = new Cell(new Pair<>(i, j), cellSize, true);
+                if (this.map[i][j].getType() == CellType.FOOD) {
+                    foodCellsCount++;
+                }
             }
         }
+        System.out.println("Food Cells:" + foodCellsCount + " out of " + (map[0].length * map.length));
         ants = new ArrayList<>();
         for (int i = 0; i < countNests; i++) {
             int x = random.nextInt(width / cellSize);
@@ -223,10 +233,10 @@ public class AntArea {
         this.mapImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.width = width;
         this.height = height;
-        this.map = new Cell[width][height];
+        this.map = new Cell[width / cellSize][height / cellSize];
         for (int i = 0; i < this.width / cellSize; i++) {
             for (int j = 0; j < this.height / cellSize; j++) {
-                this.map[i][j] = new Cell(this, new Pair<>(i, j), cellSize, false);
+                this.map[i][j] = new Cell(new Pair<>(i, j), cellSize, false);
             }
         }
         ants = new ArrayList<>();
@@ -299,9 +309,12 @@ public class AntArea {
                 if (cell.getType() != CellType.DEFAULT) {
                     continue;
                 }
+                if (!cell.decay) {
+                    continue;
+                }
                 cell.foodPheremone = cell.foodPheremone * (1 - decayRate);
-                cell.homePheremone = cell.foodPheremone * (1 - decayRate);
-                if (cell.foodPheremone + cell.homePheremone < pheremoneThreshold) {
+                cell.homePheremone = cell.homePheremone * (1 - decayRate);
+                if ((cell.foodPheremone + cell.homePheremone) < pheremoneThreshold) {
                     cell.repaint(cellTypeColorMap.get(CellType.DEFAULT));
                     continue;
                 }
@@ -318,6 +331,16 @@ public class AntArea {
         }
         for (Ant ant : ants) {
             ant.update();
+        }
+    }
+
+    public void shutDown() {
+        for (Pair<Integer, Integer> nestLocation : nestLocations) {
+            map[nestLocation.getKey()][nestLocation.getValue()].repaint(cellTypeColorMap.get(CellType.DEFAULT));
+        }
+        for (Ant ant : ants) {
+            Pair<Integer, Integer> location = ant.getLocation();
+            map[location.getKey()][location.getValue()].leave(ant);
         }
     }
 }

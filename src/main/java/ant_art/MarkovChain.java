@@ -14,6 +14,7 @@ import java.util.List;
  **/
 public class MarkovChain {
     private int bucketSize = 1;
+    private int order = 1;
     private Map<Color, Map<Color, Integer>> colorCounts = new HashMap<>();
     //This will be used in weighted selection of colors.
     private Map<Color, Pair<Integer, NavigableMap<Integer, Color>>> selectorMap = new HashMap<>();

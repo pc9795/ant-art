@@ -5,3 +5,7 @@ target/
 sample.jpg
 output.jpg
 output.gif
+
+frames/
+outputs/
+inputs/

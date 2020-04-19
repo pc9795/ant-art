@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
@@ -28,16 +29,17 @@ public class Renderer extends JFrame implements Runnable {
     private int duration;
     private int sampleInterval;
     private ImageUtils.GIFBuilder gifBuilder;
+    private int offSet = 50;
 
-    public Renderer(AntArea antArea, String title, int width, int height, int fps, int duration, int sampleInterval) {
+    public Renderer(AntArea antArea, String title, int fps, int duration, int sampleInterval) {
         super(title);
         this.antArea = antArea;
         this.fps = fps;
         this.duration = duration;
         this.showGui = true;
         this.sampleInterval = sampleInterval;
-        this.height = height;
-        this.width = width;
+        this.height = antArea.getHeight() + offSet;
+        this.width = antArea.getWidth() + offSet;
         this.gifBuilder = new ImageUtils.GIFBuilder();
     }
 
@@ -63,9 +65,11 @@ public class Renderer extends JFrame implements Runnable {
     }
 
     private void shutDown() {
+        antArea.shutDown();
         try {
             gifBuilder.create(new File("output.gif"), 250, true);
-            ImageIO.write(antArea.getMapImage(), "jpg", new File("output.jpg"));
+            BufferedImage oilPainting = new ImageUtils.OilPainter().paint(antArea.getMapImage());
+            ImageIO.write(oilPainting, "jpg", new File("output.jpg"));
 
         } catch (IOException e) {
             System.out.println("Not able to create output gif.");
@@ -122,7 +126,8 @@ public class Renderer extends JFrame implements Runnable {
                     gifBuilder.addImage(ImageUtils.deepCopy(antArea.getMapImage()));
                 }
                 if (showGui) {
-                    updateView(timer);
+                    long timeLeft = duration - ((now - timer) / 1000);
+                    updateView(timeLeft);
                 }
                 updates++;
             }
@@ -133,17 +138,16 @@ public class Renderer extends JFrame implements Runnable {
                 }
                 updates = 0;
             }
-            if (now - timer > duration * 1000) {
+            if ((now - timer) > (duration * 1000)) {
                 System.out.println("Simulation completed.");
                 shutDown();
             }
         }
     }
 
-    private void updateView(long startTimeInMillis) {
+    private void updateView(long timeLeft) {
         Graphics g = viewBs.getDrawGraphics();
         g.clearRect(0, 0, view.getWidth(), view.getHeight());
-        long timeLeft = duration - (System.currentTimeMillis() - startTimeInMillis) / 1000;
         g.drawString("Time left: " + timeLeft + " seconds", 20, 20);
         int xOffset = (view.getWidth() - antArea.getWidth()) / 2;
         int yOffset = (view.getHeight() - antArea.getHeight()) / 2;
