@@ -1,3 +1,7 @@
 .idea/
 *.iml
 target/
+
+sample.jpg
+output.jpg
+output.gif

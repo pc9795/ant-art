@@ -1,5 +1,6 @@
 package ant_art;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -64,6 +65,7 @@ public class Renderer extends JFrame implements Runnable {
     private void shutDown() {
         try {
             gifBuilder.create(new File("output.gif"), 250, true);
+            ImageIO.write(antArea.getMapImage(), "jpg", new File("output.jpg"));
 
         } catch (IOException e) {
             System.out.println("Not able to create output gif.");
