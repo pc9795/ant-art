@@ -68,6 +68,7 @@ public class Renderer extends JFrame implements Runnable {
         antArea.shutDown();
         try {
             gifBuilder.create(new File("output.gif"), 250, true);
+            ImageIO.write(antArea.getMapImage(), "jpg", new File("output_raw.jpg"));
             BufferedImage oilPainting = new ImageUtils.OilPainter().paint(antArea.getMapImage());
             ImageIO.write(oilPainting, "jpg", new File("output.jpg"));
 

@@ -7,9 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,15 +18,23 @@ import java.util.stream.Collectors;
  **/
 public class Main {
     public static void main(String[] args) throws IOException {
-        MarkovChain chain = new MarkovChain(1);
-        InputStream inputStream = new FileInputStream(new File("sample.jpg"));
+        Color backgroundColor = Color.black;
+        //Selecting a pallete
+        File palletesDir = new File("palletes");
+        File palletes[] = palletesDir.listFiles();
+        File selectedPallete = palletes[new Random().nextInt(palletes.length)];
+        System.out.println("Selected pallete:" + selectedPallete.getName());
+        InputStream inputStream = new FileInputStream(selectedPallete);
+        //Training markov chain
+        MarkovChain chain = new MarkovChain(1, Collections.singletonList(backgroundColor));
         chain.train(ImageIO.read(inputStream));
         System.out.println("Chain created...");
-        //AntArea antArea = new AntArea(512, 512, chain);
-        BufferedImage image = ImageIO.read(new File("frames/1.jpg"));
+        //Selecting a target color.
+        BufferedImage image = ImageIO.read(new File("frames/2.jpg"));
         int maxImageSize = 520;
-        if (image.getHeight() > maxImageSize || image.getWidth() > maxImageSize) {
-            System.out.println("Image dimensions(" + image.getWidth() + " X " + image.getHeight() + ") are more than maximum allowed size");
+        image = ImageUtils.rescaleToLimit(image, maxImageSize, 3);
+        if (image == null) {
+            System.out.println("Image size can't be processed.");
             return;
         }
         Map<Color, Float> colorProfile = ImageUtils.colorProfile(image);
@@ -39,7 +45,6 @@ public class Main {
                 colorProfile.remove(color);
             }
         }
-        Color backgroundColor = Color.black;
         System.out.println("Color profile size:" + colorProfile.size());
         colorProfile = colorProfile.entrySet().stream().sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).
                 collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
@@ -58,6 +63,7 @@ public class Main {
             return;
         }
         System.out.println("Target color:" + targetColor);
+
         AntArea antArea = new AntArea(chain, image, targetColor, backgroundColor);
         Renderer renderer = new Renderer(antArea, "Ant Simulator", 60, 30, 5);
         renderer.execute();

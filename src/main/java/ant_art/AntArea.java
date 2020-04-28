@@ -1,5 +1,6 @@
 package ant_art;
 
+import ant_art.entities.Ant;
 import javafx.util.Pair;
 
 import java.awt.*;
@@ -19,10 +20,10 @@ public class AntArea {
 
     public class Cell {
         private CellType type;
-        private float maxHomePheremone = 50;
-        private float maxFoodPheremone = 50;
-        private float homePheremone;
-        private float foodPheremone;
+        private float maxHomePheromone = 50;
+        private float maxFoodPheromone = 50;
+        private float homePheromone;
+        private float foodPheromone;
         private final Pair<Integer, Integer> location;
         private boolean antPresent;
         private int size;
@@ -74,12 +75,12 @@ public class AntArea {
             return type;
         }
 
-        public float getHomePheremone() {
-            return homePheremone;
+        public float getHomePheromone() {
+            return homePheromone;
         }
 
-        public float getFoodPheremone() {
-            return foodPheremone;
+        public float getFoodPheromone() {
+            return foodPheromone;
         }
 
         public int getFood() {
@@ -111,9 +112,9 @@ public class AntArea {
                 throw new RuntimeException("Invalid operation: Ant already present");
             }
             if (ant.collectedFood()) {
-                foodPheremone = Math.min(maxFoodPheremone, foodPheremone + pheremoneGain);
+                foodPheromone = Math.min(maxFoodPheromone, foodPheromone + pheremoneGain);
             } else {
-                homePheremone = Math.min(maxHomePheremone, homePheremone + pheremoneGain);
+                homePheromone = Math.min(maxHomePheromone, homePheromone + pheremoneGain);
             }
             repaint(ant.getColor());
             antPresent = true;
@@ -138,7 +139,7 @@ public class AntArea {
             if (type != CellType.DEFAULT || color == null) {
                 return;
             }
-            float intensity = (foodPheremone / maxFoodPheremone) * 25;
+            float intensity = (foodPheromone / maxFoodPheromone) * 25;
             intensity = Math.min(intensity, 1f);
             int red = (int) (color.getRed() * intensity);
             int green = (int) (color.getGreen() * intensity);
@@ -169,12 +170,12 @@ public class AntArea {
     private final int height;
     private final List<Ant> ants;
     private int currAnts = 0;
-    private int nestSize = 1;
+    private int nestSize = 5;
     private int foodSize = 1;
     private List<Pair<Integer, Integer>> nestLocations = new ArrayList<>();
     private int maxAnts = 100;
     private int countFood = 20;
-    private int countNests = 3;
+    private int countNests = 1;
     private int defaultFoood = 5;
     private float decayRate = 0.01f;
     private float pheremoneThreshold = 0.01f;
@@ -312,9 +313,9 @@ public class AntArea {
                 if (!cell.decay) {
                     continue;
                 }
-                cell.foodPheremone = cell.foodPheremone * (1 - decayRate);
-                cell.homePheremone = cell.homePheremone * (1 - decayRate);
-                if ((cell.foodPheremone + cell.homePheremone) < pheremoneThreshold) {
+                cell.foodPheromone = cell.foodPheromone * (1 - decayRate);
+                cell.homePheromone = cell.homePheromone * (1 - decayRate);
+                if ((cell.foodPheromone + cell.homePheromone) < pheremoneThreshold) {
                     cell.repaint(cellTypeColorMap.get(CellType.DEFAULT));
                     continue;
                 }

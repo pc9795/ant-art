@@ -205,4 +205,26 @@ public class ImageUtils {
         }
         return colorProfile;
     }
+
+    public static BufferedImage convertToBufferedImage(Image image) {
+        BufferedImage newImage = new BufferedImage(
+                image.getWidth(null), image.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = newImage.createGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return newImage;
+    }
+
+    public static BufferedImage rescaleToLimit(BufferedImage input, int limit, int depth) {
+        if (depth == 0) {
+            return null;
+        }
+        if (input.getWidth() <= limit && input.getHeight() <= limit) {
+            return input;
+        }
+        System.out.println("Rescaling...");
+        Image rescaled = input.getScaledInstance(input.getWidth() / 2, input.getHeight() / 2, Image.SCALE_DEFAULT);
+        return rescaleToLimit(convertToBufferedImage(rescaled), limit, depth - 1);
+    }
 }

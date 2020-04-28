@@ -19,8 +19,10 @@ public class MarkovChain {
     //This will be used in weighted selection of colors.
     private Map<Color, Pair<Integer, NavigableMap<Integer, Color>>> selectorMap = new HashMap<>();
     private Random random = new Random();
+    private List<Color> excludedColors;
 
-    public MarkovChain(int bucketSize) {
+    public MarkovChain(int bucketSize, List<Color> excludedColors) {
+        this.excludedColors = excludedColors;
         this.bucketSize = bucketSize;
     }
 
@@ -37,6 +39,15 @@ public class MarkovChain {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 Color color = new Color(image.getRGB(x, y));
+                boolean exclude = false;
+                for (Color excludedColor : excludedColors) {
+                    if (ImageUtils.isSimilar(excludedColor, color)) {
+                        exclude = true;
+                    }
+                }
+                if (exclude) {
+                    continue;
+                }
                 if (!colorCounts.containsKey(color)) {
                     colorCounts.put(color, new HashMap<>());
                 }
@@ -73,7 +84,7 @@ public class MarkovChain {
             return selectorMap.get(color);
         }
         Map<Color, Integer> colors = colorCounts.get(color);
-        if (color == null || colors.isEmpty()) {
+        if (colors == null || colors.isEmpty()) {
             return null;
         }
         NavigableMap<Integer, Color> selector = new TreeMap<>();

@@ -5,7 +5,9 @@ target/
 sample.jpg
 output.jpg
 output.gif
+output_raw.jpg
 
 frames/
 outputs/
 inputs/
+palletes/
