@@ -106,8 +106,8 @@ public class Main {
         //If found number of colors are less than target color count
         if (targetColors.size() < targetColorCount) {
             System.out.println(String.format("Number of colors found for processing:%s are less than the target colors:" +
-                    "%s! Proceeding with found number of colors", colorProfile.size(), targetColorCount));
-            targetColorCount = colorProfile.size();
+                    "%s! Proceeding with found number of colors", targetColors.size(), targetColorCount));
+            targetColorCount = targetColors.size();
         }
         targetColors = targetColors.subList(0, targetColorCount);
 

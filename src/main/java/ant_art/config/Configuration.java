@@ -100,7 +100,7 @@ public final class Configuration {
     public static final int ANT_FOOD_CAPACITY = 100;
 
     public static final int COLOR_SIMILARITY_THRESHOLD = 50;
-    public static final int DEFAULT_TARGET_COLOR_COUNT = 1;
+    public static final int DEFAULT_TARGET_COLOR_COUNT = 5;
     //520 works best with an FPS of 60 so change accordingly. If increasing the FPS reduce the size and vice-versa.
     public static final int MAXIMUM_IMAGE_SIZE = 520;
     public static final int MAXIMUM_RESCALING_DEPTH = 3;

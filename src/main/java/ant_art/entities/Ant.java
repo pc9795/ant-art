@@ -251,7 +251,7 @@ class Ant {
                 moveToNest();
             }
         } else {
-            if (curr.getType() == AntArea.CellType.FOOD) {
+            if (curr.isContainingFood(this.foodId)) {
                 //If not collected food and on a cell with food. Pick up the food and if collecting this food fills
                 //the current capacity turn around and look for nest
                 curr.pickUpFood(this.foodId);
