@@ -59,7 +59,7 @@ public class Main {
 
         //Select an input image
         File inputFile = getRandomFile(inputDir);
-        System.out.println(String.format("Working on file:%s", inputFile.getName()));
+        System.out.println(String.format("Working on file:%s\n", inputFile.getName()));
         BufferedImage image = ImageIO.read(inputFile);
         image = ImageUtils.rescaleToLimit(image, Configuration.MAXIMUM_IMAGE_SIZE, Configuration.MAXIMUM_RESCALING_DEPTH);
         //If not able to rescale the image to a limit.
@@ -84,6 +84,7 @@ public class Main {
         colorProfile = colorProfile.entrySet().stream().sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue())).
                 collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
         colorProfile.forEach((color, aFloat) -> System.out.println("Color:" + color + ", Percentage:" + aFloat));
+        System.out.println();
 
         colors = new ArrayList<>(colorProfile.keySet());
         List<Color> targetColors = new ArrayList<>();
@@ -94,7 +95,7 @@ public class Main {
             }
             targetColors.add(color);
         }
-        System.out.println("Colors found after background removal:" + targetColors.size());
+        System.out.println(String.format("Colors found after background removal:%s\n", targetColors.size()));
 
         //Checking if any color is found or not.
         if (targetColors.size() == 0) {
@@ -108,8 +109,9 @@ public class Main {
                     "%s! Proceeding with found number of colors", colorProfile.size(), targetColorCount));
             targetColorCount = colorProfile.size();
         }
+        targetColors = targetColors.subList(0, targetColorCount);
 
-        System.out.println("Target colors found:" + targetColors);
+        System.out.println(String.format("Target colors found:%s\n", targetColors));
 
         //Select pallets to replace target colors
         MarkovChain[] chains = new MarkovChain[targetColorCount];
@@ -124,10 +126,12 @@ public class Main {
             chains[i].train(ImageIO.read(inputStream));
             System.out.println(String.format("Chain created for pallet: %s", pallet.getName()));
         }
+        System.out.println();
 
         //Create ant area
         AntArea antArea = new AntArea(chains, image, targetColors, Configuration.Colors.DEFAULT);
         //Create the GUI
+        System.out.println("Starting GUI...");
         Renderer renderer = new Renderer(antArea, "Ant Simulator", Configuration.GUI.FPS, Configuration.GUI.DURATION,
                 Configuration.GUI.SAMPLE_INTERVAL, Configuration.Directories.OUTPUT);
         //Run the GUI

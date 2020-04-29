@@ -20,7 +20,7 @@ import java.util.List;
 public class AntArea {
     //Type of food cell
     public enum CellType {
-        NEST, DEFAULT, FOOD
+        NEST, DEFAULT, FOOD, SITE
     }
 
     /**
@@ -30,7 +30,7 @@ public class AntArea {
     class AntFood {
         @SuppressWarnings("unused")
         private int id;
-        private Color color;
+        Color color;
         private MarkovChain chain;
         private Color prevRandomColor;
 
@@ -69,9 +69,6 @@ public class AntArea {
         private int food;
         //current color of this cell
         private Color color;
-        //is this cell a site or not
-        //todo can look for converting a new type instead of using a boolean flag
-        private boolean decay = true;
         //If this cell contains then store the food id.
         private int foodId = -1;
 
@@ -141,6 +138,10 @@ public class AntArea {
 
             //If the color count for any food crosses a threshold then setup with that foodId.
             for (int foodId : antFoodMap.keySet()) {
+                //Food never found
+                if (!foodIdToCountMap.containsKey(foodId)) {
+                    continue;
+                }
                 float colorRatio = (float) foodIdToCountMap.get(foodId) / (size * size);
                 if (colorRatio > Configuration.TYPE_IDENTIFICATION_THRESHOLD) {
                     setFood(foodId);
@@ -150,12 +151,11 @@ public class AntArea {
         }
 
         /**
-         * Set cell as default
+         * Set this cell as a site.
          */
-        private void setDefault() {
-            this.type = CellType.DEFAULT;
-            repaint(defaultColor);
-            this.foodId = -1;
+        private void setSite() {
+            //We have not set foodId as this site should remember its color forever.
+            this.type = CellType.SITE;
         }
 
         /**
@@ -194,10 +194,9 @@ public class AntArea {
             food -= Configuration.FOOD_PICKUP_QUANTITY;
             //All food is gone.
             if (food == 0) {
-                setDefault();
                 //After all food is gone make it as a site.
                 //THIS IS THE MAIN PART WHICH LET THE ART STAY IN THE FRAME
-                decay = false;
+                setSite();
             }
         }
 
@@ -263,9 +262,8 @@ public class AntArea {
          * Repaint according to pheromone intensity
          */
         private void repaintAccordingToPheromoneIntensity() {
-            //The cell obtains a color from the ant when it moves on it. We dont' change the color of a food or nest cell.
-            //Checking that whether this cell is a default cell or not and whether it has got a color from ant or not.
-            if (type != CellType.DEFAULT || color == null) {
+            //We don't change intensity of FOOD and NEST cells. A color is set once a ant moves in this cell.
+            if (type == CellType.FOOD || type == CellType.NEST || color == null) {
                 return;
             }
             //Right now the intensity is decided on food pheromone levels only
@@ -296,7 +294,11 @@ public class AntArea {
                     repaint(Configuration.Colors.NEST);
                     break;
                 case FOOD:
-                    repaint(antFoodMap.get(food).color);
+                    repaint(antFoodMap.get(foodId).color);
+                    break;
+                case SITE:
+                    //A site will be updated by a random color for the food id which it used to contain
+                    repaint(antFoodMap.get(foodId).getRandomColor());
                     break;
             }
             antPresent = false;
@@ -467,12 +469,8 @@ public class AntArea {
         for (int i = 0; i < getAreaWidth(); i++) {
             for (int j = 0; j < getAreaHeight(); j++) {
                 Cell cell = map[i][j];
-                //Skip food or nest cell
+                //Skip for food, site or nest cell
                 if (cell.getType() != CellType.DEFAULT) {
-                    continue;
-                }
-                //If it is a site then skip it
-                if (!cell.decay) {
                     continue;
                 }
                 //Decay the pheromone levels
