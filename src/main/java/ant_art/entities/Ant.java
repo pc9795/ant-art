@@ -1,7 +1,7 @@
 package ant_art.entities;
 
-import ant_art.AntDirections;
-import ant_art.Configuration;
+import ant_art.utils.AntDirections;
+import ant_art.config.Configuration;
 import ant_art.exceptions.AntArtException;
 import javafx.util.Pair;
 
@@ -32,14 +32,17 @@ class Ant {
     private int foodCapacity;
     //random generator for the ant
     private Random random = new Random();
+    //particular food the ant is looking for
+    private int foodId;
 
     Ant(AntArea antArea, Pair<Integer, Integer> directionVector, Pair<Integer, Integer> location, Color color,
-        int foodCapacity) throws AntArtException {
+        int foodCapacity, int foodId) throws AntArtException {
         this.antArea = antArea;
         this.directionVector = directionVector;
         this.location = location;
         this.color = color;
         this.foodCapacity = foodCapacity;
+        this.foodId = foodId;
         //Move to the location
         antArea.getMap()[location.getKey()][location.getValue()].move(this);
     }
@@ -50,6 +53,10 @@ class Ant {
 
     Pair<Integer, Integer> getLocation() {
         return location;
+    }
+
+    int getFoodId() {
+        return foodId;
     }
 
     /**
@@ -96,7 +103,7 @@ class Ant {
             return false;
         }
 
-        getCurrentCell().leave();
+        getCurrentCell().leave(this);
         dest.move(this);
 
         //Update the ant location
@@ -114,7 +121,7 @@ class Ant {
      */
     private boolean moveToFoodCell(List<AntArea.Cell> cellList) throws AntArtException {
         //Find food cells
-        List<AntArea.Cell> foodCellList = cellList.stream().filter(cell -> cell.getType() == AntArea.CellType.FOOD).collect(Collectors.toList());
+        List<AntArea.Cell> foodCellList = cellList.stream().filter(cell -> cell.isContainingFood(this.foodId)).collect(Collectors.toList());
         if (foodCellList.isEmpty()) {
             return false;
         }
@@ -247,7 +254,7 @@ class Ant {
             if (curr.getType() == AntArea.CellType.FOOD) {
                 //If not collected food and on a cell with food. Pick up the food and if collecting this food fills
                 //the current capacity turn around and look for nest
-                curr.pickUpFood();
+                curr.pickUpFood(this.foodId);
                 currFood++;
                 if (collectedFood()) {
                     directionVector = AntDirections.moveBackward(directionVector);

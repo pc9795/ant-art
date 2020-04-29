@@ -1,9 +1,9 @@
 package ant_art.entities;
 
-import ant_art.AntDirections;
-import ant_art.Configuration;
-import ant_art.ImageUtils;
-import ant_art.MarkovChain;
+import ant_art.utils.AntDirections;
+import ant_art.config.Configuration;
+import ant_art.utils.ImageUtils;
+import ant_art.utils.MarkovChain;
 import ant_art.exceptions.AntArtException;
 import javafx.util.Pair;
 
@@ -21,6 +21,33 @@ public class AntArea {
     //Type of food cell
     public enum CellType {
         NEST, DEFAULT, FOOD
+    }
+
+    /**
+     * This class represents an ant food which represents a particular target color. It also generate alternatives
+     * for this target color which seems not so nice at first but I have not found any better way yet.
+     */
+    class AntFood {
+        @SuppressWarnings("unused")
+        private int id;
+        private Color color;
+        private MarkovChain chain;
+        private Color prevRandomColor;
+
+        AntFood(int id, Color color, MarkovChain chain) {
+            this.id = id;
+            this.color = color;
+            this.chain = chain;
+        }
+
+        Color getRandomColor() {
+            if (prevRandomColor == null) {
+                prevRandomColor = chain.getRandomColor();
+                return prevRandomColor;
+            }
+            prevRandomColor = chain.getRandomNeighboringColor(prevRandomColor);
+            return prevRandomColor;
+        }
     }
 
     /**
@@ -45,15 +72,17 @@ public class AntArea {
         //is this cell a site or not
         //todo can look for converting a new type instead of using a boolean flag
         private boolean decay = true;
+        //If this cell contains then store the food id.
+        private int foodId = -1;
 
-        Cell(Pair<Integer, Integer> location, int size, boolean typeIdentification) {
+        Cell(Pair<Integer, Integer> location, int size, boolean identifyFood) {
             this.type = CellType.DEFAULT;
             this.location = location;
             this.size = size;
             this.food = Configuration.DEFAULT_FOOD_IN_CELL;
             //Try to identify the cell type from the area contents on the location
-            if (typeIdentification) {
-                identifyType();
+            if (identifyFood) {
+                identifyFood();
             }
         }
 
@@ -78,65 +107,94 @@ public class AntArea {
         }
 
         /**
-         * Try to identify the part of the area which this cell represents and update it accordingly
+         * Check whether the cell contains the particular food
+         *
+         * @param foodId id of the food
+         * @return true if cell contains the food with given id
          */
-        private void identifyType() {
-            if (isType(CellType.FOOD)) {
-                type = CellType.FOOD;
-                repaint(cellTypeColorMap.get(type));
-            }
+        boolean isContainingFood(int foodId) {
+            return type == CellType.FOOD && this.foodId == foodId;
         }
 
         /**
-         * Check whether cell is a particular type
-         *
-         * @param type type of the cell to check
-         * @return whether the contents of the cell represents the given type
+         * Check whether the cell contains an ant food or not.
          */
-        @SuppressWarnings("SameParameterValue")
-        private boolean isType(CellType type) {
+        private void identifyFood() {
             //Get the coordinates in the area
             int imageX = location.getKey() * size;
             int imageY = location.getValue() * size;
-            //Get the color
-            //todo update this if want to work on multiple colors
-            Color color = cellTypeColorMap.get(type);
 
-            //Check pixel by pixel that the color of the cell is similar to the type
-            int count = 0;
+            Map<Integer, Integer> foodIdToCountMap = new HashMap<>();
+
+            //Check pixel by pixel that the color of the cell is similar to any of the ant-foods.
             for (int i = imageX; i < imageX + size; i++) {
                 for (int j = imageY; j < imageY + size; j++) {
                     Color pixelColor = new Color(mapImage.getRGB(i, j));
-                    count += ImageUtils.isSimilar(color, pixelColor) ? 1 : 0;
+                    for (int foodId : antFoodMap.keySet()) {
+                        boolean isSimilar = ImageUtils.isSimilar(antFoodMap.get(foodId).color, pixelColor);
+                        if (isSimilar) {
+                            foodIdToCountMap.put(foodId, foodIdToCountMap.getOrDefault(foodId, 0) + 1);
+                        }
+                    }
                 }
             }
-            return (float) count / (size * size) > Configuration.TYPE_IDENTIFICATION_THRESHOLD;
+
+            //If the color count for any food crosses a threshold then setup with that foodId.
+            for (int foodId : antFoodMap.keySet()) {
+                float colorRatio = (float) foodIdToCountMap.get(foodId) / (size * size);
+                if (colorRatio > Configuration.TYPE_IDENTIFICATION_THRESHOLD) {
+                    setFood(foodId);
+                    break;
+                }
+            }
         }
 
         /**
-         * Set this cell to given type
-         *
-         * @param type type of the cell
+         * Set cell as default
          */
-        private void setType(CellType type) {
-            this.type = type;
-            repaint(cellTypeColorMap.get(type));
+        private void setDefault() {
+            this.type = CellType.DEFAULT;
+            repaint(defaultColor);
+            this.foodId = -1;
+        }
+
+        /**
+         * Set cell as a nest
+         */
+        private void setNest() {
+            this.type = CellType.NEST;
+            repaint(Configuration.Colors.NEST);
+            this.foodId = -1;
+        }
+
+        /**
+         * Set cell as a food
+         *
+         * @param foodId id of the food
+         */
+        private void setFood(int foodId) {
+            this.type = CellType.FOOD;
+            this.foodId = foodId;
+            repaint(antFoodMap.get(foodId).color);
         }
 
         /**
          * Let the food to be picked up from the cell.
          * todo return the food picked
+         *
+         * @param foodId id of the food to pickup
          */
-        void pickUpFood() throws AntArtException {
+        void pickUpFood(int foodId) throws AntArtException {
             if (type != CellType.FOOD) {
                 throw new AntArtException("Invalid operation: Not a food source");
             }
-
+            if (this.foodId != foodId) {
+                throw new AntArtException(String.format("Not contain food:%s", foodId));
+            }
             food -= Configuration.FOOD_PICKUP_QUANTITY;
             //All food is gone.
             if (food == 0) {
-                type = CellType.DEFAULT;
-                repaint(cellTypeColorMap.get(type));
+                setDefault();
                 //After all food is gone make it as a site.
                 //THIS IS THE MAIN PART WHICH LET THE ART STAY IN THE FRAME
                 decay = false;
@@ -224,20 +282,21 @@ public class AntArea {
         /**
          * Let an ant leave this cell
          */
-        void leave() throws AntArtException {
+        void leave(Ant ant) throws AntArtException {
             if (!antPresent) {
                 throw new AntArtException("Can't leave as no ant is currently present here");
             }
             switch (type) {
                 case DEFAULT:
                     //Get a random color when an ant leave this cell.
-                    //todo check whether this method be on area or on ant.
-                    color = getRandomColor();
+                    color = antFoodMap.get(ant.getFoodId()).getRandomColor();
                     repaintAccordingToPheromoneIntensity();
                     break;
                 case NEST:
+                    repaint(Configuration.Colors.NEST);
+                    break;
                 case FOOD:
-                    repaint(cellTypeColorMap.get(type));
+                    repaint(antFoodMap.get(food).color);
                     break;
             }
             antPresent = false;
@@ -262,35 +321,34 @@ public class AntArea {
             AntDirections.SOUTH_EAST, AntDirections.NORTH_EAST, AntDirections.NORTH_WEST, AntDirections.NORTH,
             AntDirections.EAST, AntDirections.WEST};
     private final Random random = new Random();
-    //todo have to remove this to handle multiple colors
-    private static Map<CellType, Color> cellTypeColorMap = new HashMap<>();
-    //Markov chain object which gives input colors
-    private MarkovChain mkvChain;
-    //Keep track of the color so that can get neigboring color from the markov chain.
-    private Color color;
 
-    //todo have to remove this to handle multiple colors
-    static {
-        cellTypeColorMap.put(CellType.DEFAULT, Color.black);
-        cellTypeColorMap.put(CellType.NEST, Color.green);
-        cellTypeColorMap.put(CellType.FOOD, Color.red);
-    }
+    //Map of food id to the ant food.
+    private Map<Integer, AntFood> antFoodMap = new HashMap<>();
+    private Color defaultColor;
+    private int lastFoodIdForWhichAntSpawned;
 
-    public AntArea(MarkovChain mkvChain, BufferedImage frame, Color target, Color background) {
-        //todo have to remove this to handle multiple colors
-        cellTypeColorMap.put(CellType.FOOD, target);
-        //todo have to remove this to handle multiple colors
-        //Set a background
-        cellTypeColorMap.put(CellType.DEFAULT, background);
+    public AntArea(MarkovChain[] mkvChains, BufferedImage frame, List<Color> targetColors, Color background) throws AntArtException {
 
         //Round up to the multiple of the cell size
         int cellSize = Configuration.CELL_SIZE;
         this.width = (frame.getWidth() / cellSize) * cellSize;
         this.height = (frame.getHeight() / cellSize) * cellSize;
 
+        this.defaultColor = background;
         this.mapImage = frame;
-        this.mkvChain = mkvChain;
         this.map = new Cell[width / cellSize][height / cellSize];
+
+        if (mkvChains.length != targetColors.size()) {
+            throw new AntArtException("The number of markov chains and target colors should be same");
+        }
+
+        //Updated target colors as ant foods
+        for (int i = 0; i < targetColors.size(); i++) {
+            antFoodMap.put(i, new AntFood(i, targetColors.get(i), mkvChains[i]));
+        }
+
+        //So that spawning starts from zero. Look for `spawnAnt` and you will understand this.
+        this.lastFoodIdForWhichAntSpawned = targetColors.size() - 1;
 
         //Create cells for the area
         int foodCellsCount = 0;
@@ -311,7 +369,7 @@ public class AntArea {
             int y = random.nextInt(height / cellSize);
             for (int l = x; l < x + Configuration.NEST_AREA_SIZE && l < width / cellSize; l++) {
                 for (int k = y; k < y + Configuration.NEST_AREA_SIZE && k < height / cellSize; k++) {
-                    map[l][k].setType(CellType.NEST);
+                    map[l][k].setNest();
                     nestLocations.add(new Pair<>(l, k));
                 }
             }
@@ -324,7 +382,9 @@ public class AntArea {
         this.mapImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.width = width;
         this.height = height;
-        this.mkvChain = mkvChain;
+
+        //Single food; setting food id as 0
+        this.antFoodMap.put(0, new AntFood(0, Configuration.Colors.FOOD, mkvChain));
 
         //Create cells for the area
         int cellSize = Configuration.CELL_SIZE;
@@ -341,7 +401,7 @@ public class AntArea {
             int y = random.nextInt(height / cellSize);
             for (int l = x; l < x + Configuration.NEST_AREA_SIZE && l < width / cellSize; l++) {
                 for (int k = y; k < y + Configuration.NEST_AREA_SIZE && k < height / cellSize; k++) {
-                    map[l][k].setType(CellType.NEST);
+                    map[l][k].setNest();
                     nestLocations.add(new Pair<>(l, k));
                 }
             }
@@ -353,7 +413,8 @@ public class AntArea {
             int y = random.nextInt(height / cellSize);
             for (int l = x; l < x + Configuration.FOOD_AREA_SIZE && l < width / cellSize; l++) {
                 for (int k = y; k < y + Configuration.FOOD_AREA_SIZE && k < height / cellSize; k++) {
-                    map[k][l].setType(CellType.FOOD);
+                    //This constructor is for ant area with single food. This food will have a food id of 0
+                    map[k][l].setFood(0);
                     foodLocations.add(new Pair<>(k, l));
                 }
             }
@@ -385,20 +446,6 @@ public class AntArea {
     }
 
     /**
-     * Generate a color from the markov chain
-     *
-     * @return color generated from markov chain
-     */
-    private Color getRandomColor() {
-        if (color == null) {
-            color = mkvChain.getRandomColor();
-            return color;
-        }
-        color = mkvChain.getRandomNeighboringColor(color);
-        return color;
-    }
-
-    /**
      * Spawn an ant
      *
      * @param directionVector direction of the ant
@@ -406,7 +453,10 @@ public class AntArea {
      * @throws AntArtException if not able to create ant on the given position
      */
     private void spawnAnt(Pair<Integer, Integer> directionVector, Pair<Integer, Integer> location) throws AntArtException {
-        ants.add(new Ant(this, directionVector, location, antColor, Configuration.ANT_FOOD_CAPACITY));
+        lastFoodIdForWhichAntSpawned++;
+        lastFoodIdForWhichAntSpawned %= antFoodMap.size();
+
+        ants.add(new Ant(this, directionVector, location, antColor, Configuration.ANT_FOOD_CAPACITY, lastFoodIdForWhichAntSpawned));
         currAnts++;
     }
 
@@ -430,7 +480,7 @@ public class AntArea {
                 cell.homePheromone = cell.homePheromone * (1 - Configuration.PHEROMONE_DECAY_RATE);
                 //Remove the color if pheromone level drops below a level
                 if ((cell.foodPheromone + cell.homePheromone) < Configuration.MINIMUM_PHEROMONE_THRESHOLD) {
-                    cell.repaint(cellTypeColorMap.get(CellType.DEFAULT));
+                    cell.repaint(defaultColor);
                     continue;
                 }
                 //Let the cell update according to the new intensity
@@ -482,14 +532,14 @@ public class AntArea {
     public void shutDown() {
         //Remove nests
         for (Pair<Integer, Integer> nestLocation : nestLocations) {
-            map[nestLocation.getKey()][nestLocation.getValue()].repaint(cellTypeColorMap.get(CellType.DEFAULT));
+            map[nestLocation.getKey()][nestLocation.getValue()].repaint(defaultColor);
         }
 
         //Remove ants
         for (Ant ant : ants) {
             Pair<Integer, Integer> location = ant.getLocation();
             try {
-                map[location.getKey()][location.getValue()].leave();
+                map[location.getKey()][location.getValue()].leave(ant);
 
             } catch (AntArtException e) {
                 System.out.println("Error in removing ants");

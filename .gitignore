@@ -2,12 +2,5 @@
 *.iml
 target/
 
-sample.jpg
-output.jpg
-output.gif
-output_raw.jpg
-
-frames/
+samples/
 outputs/
-inputs/
-palletes/
