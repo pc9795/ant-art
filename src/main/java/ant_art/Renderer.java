@@ -1,5 +1,7 @@
 package ant_art;
 
+import ant_art.entities.AntArea;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;

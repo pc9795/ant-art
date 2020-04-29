@@ -1,8 +1,8 @@
 package ant_art.entities;
 
-import ant_art.AntArea;
 import ant_art.AntDirections;
 import ant_art.Configuration;
+import ant_art.exceptions.AntArtException;
 import javafx.util.Pair;
 
 import java.awt.*;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * Created On: 17-04-2020 16:17
  * Purpose: Ant that actually moves on the map looking for food
  **/
-public class Ant {
+class Ant {
     //direction of the ant
     private Pair<Integer, Integer> directionVector;
     //location of the ant
@@ -33,8 +33,8 @@ public class Ant {
     //random generator for the ant
     private Random random = new Random();
 
-    public Ant(AntArea antArea, Pair<Integer, Integer> directionVector, Pair<Integer, Integer> location, Color color,
-               int foodCapacity) {
+    Ant(AntArea antArea, Pair<Integer, Integer> directionVector, Pair<Integer, Integer> location, Color color,
+        int foodCapacity) throws AntArtException {
         this.antArea = antArea;
         this.directionVector = directionVector;
         this.location = location;
@@ -44,18 +44,18 @@ public class Ant {
         antArea.getMap()[location.getKey()][location.getValue()].move(this);
     }
 
-    public Color getColor() {
+    Color getColor() {
         return color;
     }
 
-    public Pair<Integer, Integer> getLocation() {
+    Pair<Integer, Integer> getLocation() {
         return location;
     }
 
     /**
      * @return true if ant collected all the food it can.
      */
-    public boolean collectedFood() {
+    boolean collectedFood() {
         return currFood == foodCapacity;
     }
 
@@ -91,12 +91,12 @@ public class Ant {
      * @param dest destination cell
      * @return true if moved successfully
      */
-    private boolean moveTo(AntArea.Cell dest) {
-        if (!dest.canMove()) {
+    private boolean moveTo(AntArea.Cell dest) throws AntArtException {
+        if (dest.isAntPresent()) {
             return false;
         }
 
-        getCurrentCell().leave(this);
+        getCurrentCell().leave();
         dest.move(this);
 
         //Update the ant location
@@ -112,7 +112,7 @@ public class Ant {
      * @param cellList list of cells where ant can move
      * @return true if ant was able to move
      */
-    private boolean moveToFoodCell(List<AntArea.Cell> cellList) {
+    private boolean moveToFoodCell(List<AntArea.Cell> cellList) throws AntArtException {
         //Find food cells
         List<AntArea.Cell> foodCellList = cellList.stream().filter(cell -> cell.getType() == AntArea.CellType.FOOD).collect(Collectors.toList());
         if (foodCellList.isEmpty()) {
@@ -121,7 +121,7 @@ public class Ant {
         //Sort according to the quantity of the food
         foodCellList.sort((o1, o2) -> o2.getFood() - o1.getFood());
         //Do a random action based on a probability
-        if (random.nextInt(Configuration.antSelectionSeed) == 0) {
+        if (random.nextInt(Configuration.ANT_SELECTION_SEED) == 0) {
             Collections.shuffle(foodCellList);
         }
         //Try to move to the food cell
@@ -139,14 +139,14 @@ public class Ant {
      * @param cellList list of cells where ant can move
      * @return true if able to move
      */
-    private boolean moveToNestCell(List<AntArea.Cell> cellList) {
+    private boolean moveToNestCell(List<AntArea.Cell> cellList) throws AntArtException {
         //Find nest cellsF
         List<AntArea.Cell> nestCellList = cellList.stream().filter(cell -> cell.getType() == AntArea.CellType.NEST).collect(Collectors.toList());
         if (nestCellList.isEmpty()) {
             return false;
         }
         //Do a random action based on a probability
-        if (random.nextInt(Configuration.antSelectionSeed) == 0) {
+        if (random.nextInt(Configuration.ANT_SELECTION_SEED) == 0) {
             Collections.shuffle(nestCellList);
         }
         //Try to move to the nest cell
@@ -162,7 +162,7 @@ public class Ant {
      * Move to the food source
      */
     @SuppressWarnings("ConstantConditions")
-    private void moveToFoodSource() {
+    private void moveToFoodSource() throws AntArtException {
         AntArea.Cell forward = getCellInDirection(directionVector);
         AntArea.Cell left = getCellInDirection(AntDirections.moveCounterClockwise(directionVector));
         AntArea.Cell right = getCellInDirection(AntDirections.moveClockWise(directionVector));
@@ -182,7 +182,7 @@ public class Ant {
             return fp1 > fp2 ? -1 : 1;
         });
         //Do a random action based on a probability
-        if (random.nextInt(Configuration.antSelectionSeed) == 0) {
+        if (random.nextInt(Configuration.ANT_SELECTION_SEED) == 0) {
             Collections.shuffle(cellList);
         }
         //Try to move to a cell
@@ -197,7 +197,7 @@ public class Ant {
      * Move to nest source
      */
     @SuppressWarnings("ConstantConditions")
-    private void moveToNest() {
+    private void moveToNest() throws AntArtException {
         AntArea.Cell forward = getCellInDirection(directionVector);
         AntArea.Cell left = getCellInDirection(AntDirections.moveCounterClockwise(directionVector));
         AntArea.Cell right = getCellInDirection(AntDirections.moveClockWise(directionVector));
@@ -218,7 +218,7 @@ public class Ant {
             return hp1 > hp2 ? -1 : 1;
         });
         //Do a random action based on a probability
-        if (random.nextInt(Configuration.antSelectionSeed) == 0) {
+        if (random.nextInt(Configuration.ANT_SELECTION_SEED) == 0) {
             Collections.shuffle(cellList);
         }
         //Try to move to a cell
@@ -230,7 +230,7 @@ public class Ant {
     }
 
     //Update the state of the ant
-    public void update() {
+    void update() throws AntArtException {
         AntArea.Cell curr = getCurrentCell();
         if (collectedFood()) {
             //If collected food and reached to a nest. Drop the food and move backwards to new food source.

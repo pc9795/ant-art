@@ -6,4 +6,8 @@ package ant_art.exceptions;
  * Purpose: Custom exception of this project
  **/
 public class AntArtException extends Exception {
+
+    public AntArtException(String message) {
+        super(message);
+    }
 }
