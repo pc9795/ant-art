@@ -528,6 +528,17 @@ public class AntArea {
     }
 
     public void shutDown() {
+        int areaWidth = getAreaWidth();
+        int areaHeight = getAreaHeight();
+
+        //Remove the food which ants are not able to find
+        for (int i = 0; i < areaWidth; i++) {
+            for (int j = 0; j < areaHeight; j++) {
+                if (map[i][j].type == CellType.FOOD) {
+                    map[i][j].repaint(defaultColor);
+                }
+            }
+        }
         //Remove nests
         for (Pair<Integer, Integer> nestLocation : nestLocations) {
             map[nestLocation.getKey()][nestLocation.getValue()].repaint(defaultColor);

@@ -34,9 +34,9 @@ public class Renderer extends JFrame implements Runnable {
     private int duration;
     private int sampleInterval;
     private ImageUtils.GIFBuilder gifBuilder;
-    private String outputDir;
+    private String outputFile;
 
-    public Renderer(AntArea antArea, String title, int fps, int duration, int sampleInterval, String outputDir) {
+    public Renderer(AntArea antArea, String title, int fps, int duration, int sampleInterval, String outputFile) {
         super(title);
         this.antArea = antArea;
         this.fps = fps;
@@ -49,7 +49,7 @@ public class Renderer extends JFrame implements Runnable {
         this.width = antArea.getWidth() + offSet;
 
         this.gifBuilder = new ImageUtils.GIFBuilder();
-        this.outputDir = outputDir;
+        this.outputFile = outputFile;
     }
 
     /**
@@ -82,14 +82,16 @@ public class Renderer extends JFrame implements Runnable {
      * Generate output files. It should be called at the end of the simulation
      */
     private void generateOutputs() {
+        //Remove extension from the output file
+        outputFile = outputFile.substring(0, outputFile.lastIndexOf("."));
         try {
-            gifBuilder.create(new File(outputDir + "/" + Configuration.Outputs.GIF_FILE_NAME),
+            gifBuilder.create(new File(outputFile + ".gif"),
                     Configuration.OUTPUT_GIF_DELAY, Configuration.OUTPUT_GIF_LOOPING);
             ImageIO.write(antArea.getMapImage(), Configuration.Outputs.IMG_FORMAT,
-                    new File(outputDir + "/" + Configuration.Outputs.RAW_FILE_NAME));
+                    new File(outputFile + "_raw.jpg"));
 
             BufferedImage oilPainting = new ImageUtils.OilPainter().paint(antArea.getMapImage());
-            ImageIO.write(oilPainting, "jpg", new File(outputDir + "/" + Configuration.Outputs.OIL_PAINTED_FILE_NAME));
+            ImageIO.write(oilPainting, "jpg", new File(outputFile + "_oil_painted.jpg"));
 
         } catch (IOException e) {
             System.out.println("Not able to create output files.");

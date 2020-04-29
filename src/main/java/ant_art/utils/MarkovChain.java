@@ -41,14 +41,7 @@ public class MarkovChain {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 Color color = new Color(image.getRGB(x, y));
-                //Check excluded colors.
-                boolean exclude = false;
-                for (Color excludedColor : excludedColors) {
-                    if (ImageUtils.isSimilar(excludedColor, color)) {
-                        exclude = true;
-                    }
-                }
-                if (exclude) {
+                if (isExcluded(color)) {
                     continue;
                 }
                 if (!colorCounts.containsKey(color)) {
@@ -62,11 +55,29 @@ public class MarkovChain {
                             continue;
                         }
                         Color neighborColor = new Color(image.getRGB(i, j));
+                        if (isExcluded(neighborColor)) {
+                            continue;
+                        }
                         neighbors.put(neighborColor, neighbors.getOrDefault(neighborColor, 0) + 1);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Check whether a color is excluded
+     *
+     * @param color input color
+     * @return true if excluded
+     */
+    private boolean isExcluded(Color color) {
+        for (Color excludedColor : excludedColors) {
+            if (ImageUtils.isSimilar(excludedColor, color)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

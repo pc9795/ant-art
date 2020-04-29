@@ -57,9 +57,6 @@ public final class Configuration {
         private Outputs() {
         }
 
-        public static final String GIF_FILE_NAME = "output.gif";
-        public static final String RAW_FILE_NAME = "output_raw.jpg";
-        public static final String OIL_PAINTED_FILE_NAME = "output_oil_painted.jpg";
         public static final String IMG_FORMAT = "jpg";
     }
 

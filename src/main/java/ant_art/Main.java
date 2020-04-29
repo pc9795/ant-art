@@ -133,7 +133,7 @@ public class Main {
         //Create the GUI
         System.out.println("Starting GUI...");
         Renderer renderer = new Renderer(antArea, "Ant Simulator", Configuration.GUI.FPS, Configuration.GUI.DURATION,
-                Configuration.GUI.SAMPLE_INTERVAL, Configuration.Directories.OUTPUT);
+                Configuration.GUI.SAMPLE_INTERVAL, Configuration.Directories.OUTPUT + "/" + inputFile.getName());
         //Run the GUI
         renderer.execute();
     }
