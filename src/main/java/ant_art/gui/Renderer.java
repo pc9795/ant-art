@@ -34,9 +34,9 @@ public class Renderer extends JFrame implements Runnable {
     private int duration;
     private int sampleInterval;
     private ImageUtils.GIFBuilder gifBuilder;
-    private String outputFile;
+    private File inputFile;
 
-    public Renderer(AntArea antArea, String title, int fps, int duration, int sampleInterval, String outputFile) {
+    public Renderer(AntArea antArea, String title, int fps, int duration, int sampleInterval, File inputFile) {
         super(title);
         this.antArea = antArea;
         this.fps = fps;
@@ -49,7 +49,7 @@ public class Renderer extends JFrame implements Runnable {
         this.width = antArea.getWidth() + offSet;
 
         this.gifBuilder = new ImageUtils.GIFBuilder();
-        this.outputFile = outputFile;
+        this.inputFile = inputFile;
     }
 
     /**
@@ -83,15 +83,19 @@ public class Renderer extends JFrame implements Runnable {
      */
     private void generateOutputs() {
         //Remove extension from the output file
-        outputFile = outputFile.substring(0, outputFile.lastIndexOf("."));
+        String outputFileName = inputFile.getName().substring(0, inputFile.getName().lastIndexOf("."));
+        String gifDir = Configuration.Directories.OUTPUT + "/" + Configuration.Directories.GIF_RELATIVE;
+        String rawDir = Configuration.Directories.OUTPUT + "/" + Configuration.Directories.RAW_RELATIVE;
+        String oilPaintedDir = Configuration.Directories.OUTPUT + "/" + Configuration.Directories.OIL_PAINTED_RELATIVE;
+
         try {
-            gifBuilder.create(new File(outputFile + ".gif"),
+            gifBuilder.create(new File(gifDir + "/" + outputFileName + ".gif"),
                     Configuration.OUTPUT_GIF_DELAY, Configuration.OUTPUT_GIF_LOOPING);
             ImageIO.write(ImageUtils.deepCopy(antArea.getMapImage()), Configuration.Outputs.IMG_FORMAT,
-                    new File(outputFile + "_raw.jpg"));
+                    new File(rawDir + "/" + outputFileName + "_raw.jpg"));
 
             BufferedImage oilPainting = new ImageUtils.OilPainter().paint(antArea.getMapImage());
-            ImageIO.write(oilPainting, "jpg", new File(outputFile + "_oil_painted.jpg"));
+            ImageIO.write(oilPainting, "jpg", new File(oilPaintedDir + "/" + outputFileName + "_oil_painted.jpg"));
 
         } catch (IOException e) {
             System.out.println("Not able to create output files.");
@@ -105,6 +109,12 @@ public class Renderer extends JFrame implements Runnable {
     private void shutDown() {
         antArea.shutDown();
         generateOutputs();
+
+        //Moving input file to processed
+        if (!inputFile.renameTo(new File(Configuration.Directories.PROCESSED + "/" + inputFile.getName()))) {
+            System.out.println("Not able to move the input file to processed. Kindly move that manually or that file will" +
+                    "be picked up in next simulation");
+        }
 
         //Close the rendering thread
         running = false;
@@ -188,11 +198,13 @@ public class Renderer extends JFrame implements Runnable {
             //Check simulation is completed or not.
             if ((now - timer) > (duration * 1000)) {
                 System.out.println("Simulation completed.");
+                //todo shutdown is not called automatically. Have to check
                 shutDown();
             }
             //If updates are constantly accumulating it means FPS is not set right.
             if (updateAccumulationCount >= Configuration.GUI.UPDATE_ACCUMULATION_THRESHOLD) {
                 System.out.println("Updates are accumulating. Check the FPS. Shutting down the system");
+                //todo shutdown is not called automatically. Have to check
                 shutDown();
             }
         }

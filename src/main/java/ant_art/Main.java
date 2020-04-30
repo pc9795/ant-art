@@ -45,20 +45,42 @@ public class Main {
         return files[new Random().nextInt(files.length)];
     }
 
+    /**
+     * Create working directories for the project
+     *
+     * @return true if able to create working directories for the project
+     */
+    private static boolean checkAndCreateDefaultDirectories() {
+        List<String> dirs = Arrays.asList(Configuration.Directories.INPUT,
+                Configuration.Directories.PALLETS, Configuration.Directories.PROCESSED, Configuration.Directories.OUTPUT
+                , Configuration.Directories.OUTPUT + "/" + Configuration.Directories.GIF_RELATIVE,
+                Configuration.Directories.OUTPUT + "/" + Configuration.Directories.RAW_RELATIVE
+                , Configuration.Directories.OUTPUT + "/" + Configuration.Directories.OIL_PAINTED_RELATIVE);
+        for (String dir : dirs) {
+            File dirObj = new File(dir);
+            //Check they exists and create if not.
+            if (!dirObj.exists() && !dirObj.mkdir()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static void main(String[] args) throws IOException, AntArtException {
         int targetColorCount = Configuration.DEFAULT_TARGET_COLOR_COUNT;
-        String palletDir = Configuration.Directories.PALLETS;
-        String inputDir = Configuration.Directories.INPUT;
 
         //Try to extract configuration arguments from command line arguments.
-        if (args.length > 2) {
+        if (args.length > 1) {
             targetColorCount = Integer.parseInt(args[1].trim());
-            palletDir = args[2].trim();
-            inputDir = args[3].trim();
+        }
+
+        if (!checkAndCreateDefaultDirectories()) {
+            System.out.println("Not able to configure default directories. Exiting...");
+            System.exit(1);
         }
 
         //Select an input image
-        File inputFile = getRandomFile(inputDir);
+        File inputFile = getRandomFile(Configuration.Directories.INPUT);
         System.out.println(String.format("Working on file:%s\n", inputFile.getName()));
         BufferedImage image = ImageIO.read(inputFile);
         image = ImageUtils.rescaleToLimit(image, Configuration.MAXIMUM_IMAGE_SIZE, Configuration.MAXIMUM_RESCALING_DEPTH);
@@ -117,7 +139,7 @@ public class Main {
         MarkovChain[] chains = new MarkovChain[targetColorCount];
         for (int i = 0; i < targetColorCount; i++) {
             //Selecting a pallet
-            File pallet = getRandomFile(palletDir);
+            File pallet = getRandomFile(Configuration.Directories.PALLETS);
             System.out.println("Selected pallet:" + pallet.getName());
             InputStream inputStream = new FileInputStream(pallet);
 
@@ -133,7 +155,7 @@ public class Main {
         //Create the GUI
         System.out.println("Starting GUI...");
         Renderer renderer = new Renderer(antArea, "Ant Simulator", Configuration.GUI.FPS, Configuration.GUI.DURATION,
-                Configuration.GUI.SAMPLE_INTERVAL, Configuration.Directories.OUTPUT + "/" + inputFile.getName());
+                Configuration.GUI.SAMPLE_INTERVAL, inputFile);
         //Run the GUI
         renderer.execute();
     }
