@@ -49,7 +49,7 @@ public final class Configuration {
         }
 
         //GUI update rate per second
-        public static final int FPS = 60;
+        public static final int FPS = 45;
         //Time period of the simulation in seconds
         public static final int DURATION = 30;
         //Interval at which have to take a image snapshot
@@ -93,15 +93,15 @@ public final class Configuration {
     public static final int FOOD_PICKUP_QUANTITY = 1;
     // The color of the cell depends upon the food pheromone present on it. This multiplier will give push for low
     //pheromone levels
-    public static final float INTENSITY_AMPLIFIER = 25;
+    public static final float INTENSITY_AMPLIFIER = 25f;
     public static final int NEST_AREA_SIZE = 5;
     public static final int FOOD_AREA_SIZE = 1;
     public static final int CELL_SIZE = 4;
-    public static final int MAX_ANTS = 100;
+    public static final int MAX_ANTS = 50;
     public static final int FOOD_CELLS_TO_SPAWN = 20;
     public static final int NEST_CELLS_TO_SPAWN = 1;
     public static final int DEFAULT_FOOD_IN_CELL = 5;
-    public static final float PHEROMONE_DECAY_RATE = 0.01f;
+    public static final float PHEROMONE_DECAY_RATE = 0.005f;
     public static final float MINIMUM_PHEROMONE_THRESHOLD = 0.01f;
     public static final float PHEROMONE_GAIN = 1;
     public static final int ANT_FOOD_CAPACITY = 100;
@@ -111,7 +111,7 @@ public final class Configuration {
 
     public static final int COLOR_SIMILARITY_THRESHOLD = 50;
     //520 works best with an FPS of 60 so change accordingly. If increasing the FPS reduce the size and vice-versa.
-    public static final int MAXIMUM_IMAGE_SIZE = 520;
+    public static final int MAXIMUM_IMAGE_SIZE = 650;
     public static final int MAXIMUM_RESCALING_DEPTH = 3;
     public static final float COLOR_FILTERING_HIGHER_LIMIT = 0.5f;
     public static final float COLOR_FILTERING_LOWER_LIMIT = 0.05f;
@@ -120,5 +120,5 @@ public final class Configuration {
     public static final boolean OUTPUT_GIF_LOOPING = true;
 
     //This is the main setting which will greatly affect the output images. The number of colors to look for in images.
-    public static final int DEFAULT_TARGET_COLOR_COUNT = 1;
+    public static final int DEFAULT_TARGET_COLOR_COUNT = 2;
 }

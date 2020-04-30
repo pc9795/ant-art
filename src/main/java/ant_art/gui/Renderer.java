@@ -111,10 +111,10 @@ public class Renderer extends JFrame implements Runnable {
         generateOutputs();
 
         //Moving input file to processed
-        if (!inputFile.renameTo(new File(Configuration.Directories.PROCESSED + "/" + inputFile.getName()))) {
-            System.out.println("Not able to move the input file to processed. Kindly move that manually or that file will" +
-                    "be picked up in next simulation");
-        }
+        // if (!inputFile.renameTo(new File(Configuration.Directories.PROCESSED + "/" + inputFile.getName()))) {
+        //     System.out.println("Not able to move the input file to processed. Kindly move that manually or that file will" +
+        //             "be picked up in next simulation");
+        // }
 
         //Close the rendering thread
         running = false;
