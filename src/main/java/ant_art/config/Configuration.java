@@ -162,4 +162,8 @@ public final class Configuration {
     public static final int OUTPUT_GIF_DELAY = 250;
     //Whether the GIF will be looping or not.
     public static final boolean OUTPUT_GIF_LOOPING = true;
+    //The neighborhood to consider when evaluating the output for mosaic.
+    public static final int MOSAIC_NEIGHBORHOOD = 3;
+    //Number of different neighbors to look for in the neighborhood
+    public static final float MOSAIC_THRESHOLD = 0.5f;
 }

@@ -29,6 +29,7 @@ in sync with `Configuration.GUI.FPS`. Larger images require less FPS because of 
  
 ### How to run the project
 * To run the project use the `Main` class.
+* After the simulation is over  check the output in `outputs` directory in the root directory of the project.
 
 ### Acknowledgements
 * Thanks [Lopsec](https://lospec.com/palette-list) for there free awesome palettes.

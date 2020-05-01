@@ -2,6 +2,7 @@ package ant_art.gui;
 
 import ant_art.config.Configuration;
 import ant_art.entities.AntArea;
+import ant_art.evaluation.AntArtEvaluator;
 import ant_art.utils.ImageUtils;
 
 import javax.imageio.ImageIO;
@@ -103,12 +104,41 @@ public class Renderer extends JFrame implements Runnable {
         }
     }
 
+    private void evaluateOutputs() {
+        System.out.println("Evaluating output image...");
+        System.out.println("For large images it can take some time. BE PATIENT");
+
+        float coverageScore = AntArtEvaluator.getCoverage(antArea.getMapImage());
+        float mosaicScore = AntArtEvaluator.getMosaicScore(antArea.getMapImage());
+
+        System.out.println("************************RESULTS***********************");
+        System.out.println("Coverage Score:" + coverageScore);
+        System.out.println("Mosaic Score:" + mosaicScore);
+        System.out.println("******************************************************");
+
+        if (coverageScore <= 0.15f) {
+            System.out.println("WARNING!!! Too low coverage score consider increasing the color count to capture more image");
+        } else if (coverageScore >= 0.85f) {
+            System.out.println("WARNING!!! Too high coverage score consider decreasing the color count to get better results");
+        } else {
+            System.out.println("Good coverage");
+        }
+        if (mosaicScore < .85f) {
+            System.out.println("WARNING!!! Too low mosaic score. Rerun the simulation");
+        } else if (mosaicScore < 0.90f) {
+            System.out.println("WARNING!!! Low mosaic score. Results can be improved by reruning the simulation");
+        } else {
+            System.out.println("Good mosaic score");
+        }
+    }
+
     /**
      * Clean up
      */
     private void shutDown() {
         antArea.shutDown();
         generateOutputs();
+        evaluateOutputs();
 
         //Moving input file to processed
         if (!inputFile.renameTo(new File(Configuration.Directories.PROCESSED + "/" + inputFile.getName()))) {
