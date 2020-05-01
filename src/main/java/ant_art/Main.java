@@ -83,7 +83,7 @@ public class Main {
         File inputFile = getRandomFile(Configuration.Directories.INPUT);
         System.out.println(String.format("Working on file:%s\n", inputFile.getName()));
         BufferedImage image = ImageIO.read(inputFile);
-        image = ImageUtils.rescaleToLimit(image, Configuration.MAXIMUM_IMAGE_SIZE, Configuration.MAXIMUM_RESCALING_DEPTH);
+        image = ImageUtils.rescaleToLimit(image, Configuration.MAXIMUM_IMAGE_SIZE);
         //If not able to rescale the image to a limit.
         if (image == null) {
             System.out.println("Image size can't be processed.");

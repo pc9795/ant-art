@@ -152,7 +152,8 @@ public final class Configuration {
     public static final int ANT_FOOD_CAPACITY = 100;
     //The range to look for when checking two colors for similarity
     public static final int COLOR_SIMILARITY_THRESHOLD = 50;
-    //Number of times rescaling is applied.
+    //Number of times rescaling is applied. - NOT USED
+    @SuppressWarnings("unused")
     public static final int MAXIMUM_RESCALING_DEPTH = 3;
     //The percentage above which colors are removed.
     public static final float COLOR_FILTERING_HIGHER_LIMIT = 0.5f;

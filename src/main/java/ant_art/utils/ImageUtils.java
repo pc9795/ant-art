@@ -328,7 +328,8 @@ public class ImageUtils {
      * @param depth no of times to rescale
      * @return rescaled image or null if can't rescale in specified depth.
      */
-    public static BufferedImage rescaleToLimit(BufferedImage input, int limit, int depth) {
+    @SuppressWarnings("unused")
+    private static BufferedImage rescaleToLimit(BufferedImage input, int limit, int depth) {
         if (depth == 0) {
             return null;
         }
@@ -338,5 +339,24 @@ public class ImageUtils {
         System.out.println("Rescaling...");
         Image rescaled = input.getScaledInstance(input.getWidth() / 2, input.getHeight() / 2, Image.SCALE_DEFAULT);
         return rescaleToLimit(convertToBufferedImage(rescaled), limit, depth - 1);
+    }
+
+    public static BufferedImage rescaleToLimit(BufferedImage input, int limit) {
+        if (input.getWidth() <= limit && input.getHeight() <= limit) {
+            return input;
+        }
+        Image rescaled;
+        if (input.getWidth() > limit) {
+            int newHeight = (int) (((float) Configuration.MAXIMUM_IMAGE_SIZE / input.getWidth()) * input.getHeight());
+            System.out.println(String.format("Resizing (%s, %s) to (%s,%s)", input.getWidth(), input.getHeight(),
+                    Configuration.MAXIMUM_IMAGE_SIZE, newHeight));
+            rescaled = input.getScaledInstance(Configuration.MAXIMUM_IMAGE_SIZE, newHeight, Image.SCALE_DEFAULT);
+        } else {
+            int newWidth = (int) (((float) input.getWidth() * Configuration.MAXIMUM_IMAGE_SIZE) / input.getHeight());
+            System.out.println(String.format("Resizing (%s, %s) to (%s,%s)", input.getWidth(), input.getHeight(),
+                    newWidth, Configuration.MAXIMUM_IMAGE_SIZE));
+            rescaled = input.getScaledInstance(newWidth, Configuration.MAXIMUM_IMAGE_SIZE, Image.SCALE_DEFAULT);
+        }
+        return convertToBufferedImage(rescaled);
     }
 }
