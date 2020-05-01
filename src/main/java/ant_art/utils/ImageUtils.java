@@ -322,7 +322,6 @@ public class ImageUtils {
 
     /**
      * Rescale a image to fit in a square of side length given by `limit`.
-     * todo this method is not working correclty
      *
      * @param input input image
      * @param limit side of the square in which to fit the image

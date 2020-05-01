@@ -82,7 +82,6 @@ public class MarkovChain {
 
     /**
      * Return a random color from the chain. Remember to train first before calling this.
-     * todo check what will happen if called before training
      *
      * @return color
      */
@@ -93,7 +92,6 @@ public class MarkovChain {
 
     /**
      * Get a neighboring color from the chain for an input color
-     * todo check what will happen if called before training
      *
      * @param color input color
      * @return neighboring color from the chain

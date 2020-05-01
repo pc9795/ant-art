@@ -28,7 +28,7 @@ in sync with `Configuration.GUI.FPS`. Larger images require less FPS because of 
 * `Configuration.DEFAULT_TARGET_COOLOR_COUNT` - The no of colors ants will look for. This setting **highly affects the output**.
  
 ### How to run the project
-
+* To run the project use the `Main` class.
 
 ### Acknowledgements
 * Thanks [Lopsec](https://lospec.com/palette-list) for there free awesome palettes.

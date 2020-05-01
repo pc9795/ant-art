@@ -198,13 +198,11 @@ public class Renderer extends JFrame implements Runnable {
             //Check simulation is completed or not.
             if ((now - timer) > (duration * 1000)) {
                 System.out.println("Simulation completed.");
-                //todo shutdown is not called automatically. Have to check
                 shutDown();
             }
             //If updates are constantly accumulating it means FPS is not set right.
             if (updateAccumulationCount >= Configuration.GUI.UPDATE_ACCUMULATION_THRESHOLD) {
                 System.out.println("Updates are accumulating. Check the FPS. Shutting down the system");
-                //todo shutdown is not called automatically. Have to check
                 shutDown();
             }
         }

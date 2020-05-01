@@ -180,7 +180,6 @@ public class AntArea {
 
         /**
          * Let the food to be picked up from the cell.
-         * todo return the food picked
          *
          * @param foodId id of the food to pickup
          */
@@ -202,7 +201,6 @@ public class AntArea {
 
         /**
          * Deposit the food in cell
-         * todo take food value as input
          */
         void depositFood() throws AntArtException {
             if (type != CellType.NEST) {
@@ -267,7 +265,6 @@ public class AntArea {
                 return;
             }
             //Right now the intensity is decided on food pheromone levels only
-            //todo check whether to include home pheromone or not
             float intensity = (foodPheromone / Configuration.MAX_FOOD_PHEROMONE) * Configuration.INTENSITY_AMPLIFIER;
             //Clip to a value of 1.
             intensity = Math.min(intensity, 1f);
@@ -314,7 +311,6 @@ public class AntArea {
     private final List<Ant> ants = new ArrayList<>();
     private int currAnts = 0;
     private List<Pair<Integer, Integer>> nestLocations = new ArrayList<>();
-    //todo decide for its use
     @SuppressWarnings({"FieldCanBeLocal", "MismatchedQueryAndUpdateOfCollection"})
     private List<Pair<Integer, Integer>> foodLocations = new ArrayList<>();
     private Color antColor = Color.blue;
