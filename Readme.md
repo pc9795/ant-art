@@ -13,6 +13,8 @@ Import this project as a maven project in your prefered IDE
 
 ### Main configurations
 
+Source code is located inside `ant_art/src`.
+
 All the configurations are present in the class `config.Configuration`. Most of the configurations are set over a course 
 of period through experimentation. Some configurations which shouldn't be changed without experimentation are clearly 
 marked. The ones which can be changed to play with the outputs are mentioned below.

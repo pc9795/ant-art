@@ -37,7 +37,7 @@ public final class Configuration {
         //Directory to look for color pallets
         public static final String PALLETS = "pallets";
         //Directory to look for inputs
-        public static final String INPUT = "inputs";
+        public static final String INPUT = "inputs/new";
         //Directory to look for outputs
         public static final String OUTPUT = "outputs";
         //Directory to move the images after processing
@@ -63,7 +63,7 @@ public final class Configuration {
         }
 
         //GUI update rate per second
-        public static final int FPS = 45;
+        public static final int FPS = 60;
         //Time period of the simulation in seconds
         public static final int DURATION = 30;
 
@@ -107,11 +107,11 @@ public final class Configuration {
     }
 
     //No of ants to generate
-    public static final int MAX_ANTS = 100;
+    public static final int MAX_ANTS = 50;
     //Decay rate of pheromone.
     public static final float PHEROMONE_DECAY_RATE = 0.005f;
     //520 works best with an FPS of 60 so change accordingly. If increasing the FPS reduce the size and vice-versa.
-    public static final int MAXIMUM_IMAGE_SIZE = 520;
+    public static final int MAXIMUM_IMAGE_SIZE = 400;
     //This is the main setting which will greatly affect the output images. The number of colors to look for in images.
     public static final int DEFAULT_TARGET_COLOR_COUNT = 2;
 

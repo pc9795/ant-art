@@ -324,6 +324,7 @@ public class AntArea {
     private Map<Integer, AntFood> antFoodMap = new HashMap<>();
     private Color defaultColor;
     private int lastFoodIdForWhichAntSpawned;
+    private int antsCount;
 
     public AntArea(MarkovChain[] mkvChains, BufferedImage frame, List<Color> targetColors, Color background) throws AntArtException {
 
@@ -347,6 +348,7 @@ public class AntArea {
 
         //So that spawning starts from zero. Look for `spawnAnt` and you will understand this.
         this.lastFoodIdForWhichAntSpawned = targetColors.size() - 1;
+        this.antsCount = antFoodMap.size() * Configuration.MAX_ANTS;
 
         //Create cells for the area
         int foodCellsCount = 0;
@@ -487,7 +489,7 @@ public class AntArea {
      * Spawn ants
      */
     private void spawnAnts() {
-        if (currAnts >= Configuration.MAX_ANTS) {
+        if (currAnts >= antsCount) {
             return;
         }
         int randIndex = random.nextInt(nestLocations.size());

@@ -346,7 +346,17 @@ public class ImageUtils {
             return input;
         }
         Image rescaled;
-        if (input.getWidth() > limit) {
+
+        boolean processWidth = false;
+        if (input.getWidth() > limit && input.getHeight() > limit) {
+            if (input.getWidth() > input.getHeight()) {
+                processWidth = true;
+            }
+        } else if (input.getWidth() > limit) {
+            processWidth = true;
+        }
+
+        if (processWidth) {
             int newHeight = (int) (((float) Configuration.MAXIMUM_IMAGE_SIZE / input.getWidth()) * input.getHeight());
             System.out.println(String.format("Resizing (%s, %s) to (%s,%s)", input.getWidth(), input.getHeight(),
                     Configuration.MAXIMUM_IMAGE_SIZE, newHeight));
