@@ -37,7 +37,7 @@ public final class Configuration {
         //Directory to look for color pallets
         public static final String PALLETS = "pallets";
         //Directory to look for inputs
-        public static final String INPUT = "inputs/new";
+        public static final String INPUT = "inputs";
         //Directory to look for outputs
         public static final String OUTPUT = "outputs";
         //Directory to move the images after processing

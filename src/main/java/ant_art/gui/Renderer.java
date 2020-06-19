@@ -116,6 +116,7 @@ public class Renderer extends JFrame implements Runnable {
         System.out.println("Mosaic Score:" + mosaicScore);
         System.out.println("******************************************************");
 
+        System.out.println("************************COMMENTS***********************");
         if (coverageScore <= 0.15f) {
             System.out.println("WARNING!!! Too low coverage score consider increasing the color count to capture more image");
         } else if (coverageScore >= 0.85f) {
@@ -130,6 +131,7 @@ public class Renderer extends JFrame implements Runnable {
         } else {
             System.out.println("Good mosaic score");
         }
+        System.out.println("*******************************************************");
     }
 
     /**
@@ -145,7 +147,7 @@ public class Renderer extends JFrame implements Runnable {
             System.out.println("Not able to move the input file to processed. Kindly move that manually or that file will" +
                     "be picked up in next simulation");
         }
-
+        System.out.println("Now you can CLOSE the window and LOOK the outputs");
         //Close the rendering thread
         running = false;
         if (renderThread != null) {

@@ -4,11 +4,18 @@ Import this project as a maven project in your prefered IDE
 * Intellij - https://www.lagomframework.com/documentation/1.6.x/java/IntellijMaven.html
 * Eclipse - https://vaadin.com/learn/tutorials/import-maven-project-eclipse
 
+### Examples
+
+![example1](outputs/oil_painted/examples/1%20(3).jpg)
+
+![example2](outputs/oil_painted/examples/acrylic%20(1)_oil_painted.jpg)
+
+![example3](outputs/oil_painted/examples/vector%20(7)_oil_painted.jpg)
+
+![example4](outputs/oil_painted/examples/vector%20(22)_oil_painted.jpg)
+
 ### Important directories
 
-* `crowd_experiment_results` - Results for  the crowd experiment done for the project
-* `demo.mp4` - A demo video of the project
-* `18200540_Chaubey_Prashant.pdf` - Project report
 * `ant_art` - project root directory
 * `ant_art/src` - source code
 * `ant_art/inputs` - The default directory from where the code will pick input images

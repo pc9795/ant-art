@@ -360,11 +360,13 @@ public class ImageUtils {
             int newHeight = (int) (((float) Configuration.MAXIMUM_IMAGE_SIZE / input.getWidth()) * input.getHeight());
             System.out.println(String.format("Resizing (%s, %s) to (%s,%s)", input.getWidth(), input.getHeight(),
                     Configuration.MAXIMUM_IMAGE_SIZE, newHeight));
+            System.out.println();
             rescaled = input.getScaledInstance(Configuration.MAXIMUM_IMAGE_SIZE, newHeight, Image.SCALE_DEFAULT);
         } else {
             int newWidth = (int) (((float) input.getWidth() * Configuration.MAXIMUM_IMAGE_SIZE) / input.getHeight());
             System.out.println(String.format("Resizing (%s, %s) to (%s,%s)", input.getWidth(), input.getHeight(),
                     newWidth, Configuration.MAXIMUM_IMAGE_SIZE));
+            System.out.println();
             rescaled = input.getScaledInstance(newWidth, Configuration.MAXIMUM_IMAGE_SIZE, Image.SCALE_DEFAULT);
         }
         return convertToBufferedImage(rescaled);
